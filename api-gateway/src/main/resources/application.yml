@@ -1,0 +1,63 @@
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      routes:
+        # Auth Service
+        - id: auth-service
+          uri: http://localhost:8081
+          predicates:
+            - Path=/api/auth/**
+          filters:
+            - RewritePath=/api/(?<segment>.*), /$\{segment}
+
+        # Course Service - Public endpoints
+        - id: course-service-public
+          uri: http://localhost:8082
+          predicates:
+            - Path=/api/courses/**
+          filters:
+            - RewritePath=/api/(?<segment>.*), /$\{segment}
+
+        # Course Service - Partner API
+        - id: course-service-partner
+          uri: http://localhost:8082
+          predicates:
+            - Path=/api/public/courses
+          filters:
+            - RewritePath=/api/public/(?<segment>.*), /$\{segment}
+
+        # Registration Service
+        - id: registration-service
+          uri: http://localhost:8083
+          predicates:
+            - Path=/api/registrations/**
+          filters:
+            - RewritePath=/api/(?<segment>.*), /$\{segment}
+
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOrigins: "http://localhost:5173"
+            allowedMethods: GET, POST, PUT, DELETE, OPTIONS, PATCH
+            allowedHeaders: Content-Type, Authorization, X-API-KEY
+            allowCredentials: true
+            maxAge: 3600
+
+server:
+  port: 8080
+  servlet:
+    context-path: /
+
+logging:
+  level:
+    root: INFO
+    vn.edu.crs: DEBUG
+    org.springframework.cloud.gateway: DEBUG
+
+jwt:
+  secret: crs-jwt-secret-key-super-secure-2026
+
+api:
+  key: crs-partner-key-2026
