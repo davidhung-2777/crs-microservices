@@ -151,7 +151,7 @@
 #### Routes & Tính Năng
 
 | Client Request | Gateway Route | Destination | Auth | API Key | Ghi Chú |
-|----------------|---------------|-------------|------|---------|---------|
+|----------------|---------------|-------------|------|---------|----------|
 | `POST /api/auth/login` | `/api/auth/login` → `/auth/login` | Auth Service 8081 | ❌ | ❌ | Public |
 | `GET /api/courses` | `/api/courses` → `/courses` | Course Service 8082 | ❌ | ❌ | Public, phân trang |
 | `GET /api/courses/{id}` | `/api/courses/{id}` → `/courses/{id}` | Course Service 8082 | ❌ | ❌ | Public |
