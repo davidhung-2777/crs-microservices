@@ -1,44 +1,64 @@
 package vn.edu.crs.controller;
 
 import vn.edu.crs.dto.CourseDTO;
+import vn.edu.crs.service.CourseService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Arrays;
-import java.util.List;
 
 @Slf4j
 @RestController
 @RequestMapping("/courses")
+@RequiredArgsConstructor
 public class CourseController {
 
-    /**
-     * BUỔI 1: Mock endpoint - chưa nối DB
-     * Trả về danh sách 2 môn học cứng để test Postman
-     */
+    private final CourseService courseService;
+
     @GetMapping
-    public ResponseEntity<List<CourseDTO>> getAllCourses() {
-        log.info("GET /courses - Mock endpoint");
-        
-        List<CourseDTO> mockCourses = Arrays.asList(
-            CourseDTO.builder()
-                .id(1L)
-                .tenMonHoc("Lập Trình Java")
-                .soTinChi(3)
-                .soChoToiDa(30)
-                .soChoConLai(15)
-                .build(),
-            CourseDTO.builder()
-                .id(2L)
-                .tenMonHoc("Database Design")
-                .soTinChi(2)
-                .soChoToiDa(25)
-                .soChoConLai(10)
-                .build()
-        );
-        
-        return ResponseEntity.ok(mockCourses);
+    public ResponseEntity<Page<CourseDTO>> searchCourses(
+            @RequestParam(required = false) String keyword,
+            Pageable pageable) {
+        log.info("GET /courses - keyword: {}, page: {}", keyword, pageable.getPageNumber());
+        Page<CourseDTO> courses = courseService.search(keyword, pageable);
+        return ResponseEntity.ok(courses);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<CourseDTO> getById(@PathVariable Long id) {
+        log.info("GET /courses/{}", id);
+        CourseDTO course = courseService.getById(id);
+        return ResponseEntity.ok(course);
+    }
+
+    @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<CourseDTO> createCourse(@Valid @RequestBody CourseDTO dto) {
+        log.info("POST /courses - {}", dto.getTenMonHoc());
+        CourseDTO created = courseService.create(dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
+    }
+
+    @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<CourseDTO> updateCourse(
+            @PathVariable Long id,
+            @Valid @RequestBody CourseDTO dto) {
+        log.info("PUT /courses/{}", id);
+        CourseDTO updated = courseService.update(id, dto);
+        return ResponseEntity.ok(updated);
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> deleteCourse(@PathVariable Long id) {
+        log.info("DELETE /courses/{}", id);
+        courseService.delete(id);
+        return ResponseEntity.noContent().build();
     }
 }
